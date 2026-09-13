@@ -10,7 +10,8 @@
             [hive-addon.protocol :as addon]
             [hive-vessel.core :as v]
             [hive-vessel.executor.sse :as sse]
-            [hive-vscode.addon :as vscode])
+            [hive-vscode.addon :as vscode]
+            [clojure.java.shell :as shell])
   (:import (java.io BufferedReader InputStreamReader)
            (java.nio.file Files)
            (java.nio.file.attribute FileAttribute)
