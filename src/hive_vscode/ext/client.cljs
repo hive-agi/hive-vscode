@@ -90,9 +90,9 @@
                      (set-state! client :connected :port (get doc "port"))
                      (.on res "data"
                           (fn [chunk]
-                            (let [{:keys [events buffer] :as r} (sse/feed @buffer chunk)]
-                              (reset! buffer (:buffer r))
-                              (doseq [e events] (on-event! client doc e)))))
+                            (let [fed (sse/feed @buffer chunk)]
+                              (reset! buffer (:buffer fed))
+                              (doseq [e (:events fed)] (on-event! client doc e)))))
                      (.on res "end"
                           (fn []
                             (set-state! client :disconnected)
