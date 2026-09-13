@@ -4,4 +4,4 @@
  :language :clojure
  :license "MIT"
  :tags ["hive-vscode" "vscode" "vessel" "hive-vessel" "json-dialect" "cljs" "addon"]
- :carto {:source-roots ["dev" "resources" "src" "test"]}}
+ :carto {:source-roots ["dev" "resources" "src" "test" "test-e2e"]}}
