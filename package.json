@@ -8,14 +8,27 @@
   "engines": {
     "vscode": "^1.90.0"
   },
-  "categories": ["Other"],
+  "categories": [
+    "Other"
+  ],
   "main": "./out/extension.js",
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
-      {"command": "hive.connect", "title": "hive: Connect to vessel bridge"},
-      {"command": "hive.disconnect", "title": "hive: Disconnect"},
-      {"command": "hive.status", "title": "hive: Show vessel status"}
+      {
+        "command": "hive.connect",
+        "title": "hive: Connect to vessel bridge"
+      },
+      {
+        "command": "hive.disconnect",
+        "title": "hive: Disconnect"
+      },
+      {
+        "command": "hive.status",
+        "title": "hive: Show vessel status"
+      }
     ],
     "configuration": {
       "title": "hive",
@@ -40,6 +53,7 @@
     "package": "npm run build && vsce package --no-dependencies"
   },
   "devDependencies": {
+    "@vscode/test-electron": "^3.1.0",
     "shadow-cljs": "3.5.1"
   }
 }
