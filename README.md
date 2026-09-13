@@ -37,7 +37,8 @@ Pin the version from the Clojars badge. The jar carries the addon manifest
 
 On initialize it:
 
-1. starts the loopback bridge with a fresh random token,
+1. starts the loopback bridge (`hive-vessel.executor.sse`) with a fresh random
+   token, refusing every request that carries a browser `Origin`,
 2. writes a private (0600) discovery file with port, token and pid, by default
    `$XDG_RUNTIME_DIR/hive-vessel/vscode.json`,
 3. builds the hive-vessel target (`:vessel/id :vscode`, dialect `:json`) and

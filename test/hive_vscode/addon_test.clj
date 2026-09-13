@@ -6,7 +6,7 @@
             [clojure.test :refer [deftest is testing]]
             [hive-addon.protocol :as addon]
             [hive-vscode.addon :as vscode]
-            [hive-vscode.bridge :as bridge]
+            [hive-vessel.executor.sse :as executor]
             [hive-vscode.sse :as sse])
   (:import (java.net URI)
            (java.net.http HttpClient HttpRequest HttpRequest$BodyPublishers HttpResponse$BodyHandlers)
@@ -130,7 +130,9 @@
         (is (= 200 (get-status (url doc "/vessel/health"))))
         (is (= 401 (get-status (str (get doc "url") "/vessel/health?token=" (str/reverse (get doc "token"))))))
         (is (= 401 (get-status (str (get doc "url") "/vessel/health"))))
-        (is (= 403 (get-status (url doc "/vessel/health") "Origin" "https://evil.example")))))))
+        (is (= 403 (get-status (url doc "/vessel/health") "Origin" "https://evil.example")))
+        (is (= 403 (get-status (url doc "/vessel/health") "Origin" "http://127.0.0.1:3000"))
+            "a loopback page is still a browser: the extension host sends no Origin")))))
 
 (deftest every-native-reaches-a-connected-window-in-order
   (let [path (temp-discovery)
@@ -141,7 +143,7 @@
             b (vscode/bridge-of a)
             execute! (:vessel/execute! (vscode/vessel-target a))
             stream (open-stream doc)]
-        (is (wait-until #(= 1 (bridge/clients b))))
+        (is (wait-until #(= 1 (executor/clients b))))
         (doseq [n natives] (execute! {:native/dialect :json :native/payload n}))
         (is (wait-until #(= (count natives) (count @(:events stream)))))
         (is (= natives (mapv #(json/read-str (:data %)) @(:events stream))))
@@ -152,7 +154,17 @@
                         (.POST (HttpRequest$BodyPublishers/ofString (json/write-str {"ok" true "op" "ui/notify"})))
                         (.build))]
             (is (= 204 (.statusCode (.send client req (HttpResponse$BodyHandlers/discarding)))))
-            (is (= [{"ok" true "op" "ui/notify"}] @replies))))
+            (is (= [{"ok" true "op" "ui/notify"}] @replies))
+            (is (= [{"ok" true "op" "ui/notify"}] (vscode/replies a)))
+            (is (zero? (get-in (addon/health a) [:details :failed-replies])))))
+        (testing "an unparseable reply counts as a failed reply"
+          (let [req (-> (HttpRequest/newBuilder (URI. (url doc "/vessel/reply")))
+                        (.POST (HttpRequest$BodyPublishers/ofString "{not json"))
+                        (.build))]
+            (is (= 204 (.statusCode (.send client req (HttpResponse$BodyHandlers/discarding)))))
+            (is (= "bridge/unparseable" (get-in (last @replies) ["error" "code"])))
+            (is (= 1 (get-in (addon/health a) [:details :failed-replies])))
+            (is (= (:port b) (get-in (addon/health a) [:details :port])))))
         (testing "only :json natives are accepted"
           (is (thrown? clojure.lang.ExceptionInfo
                        (execute! {:native/dialect :elisp :native/payload "(message 1)"}))))))))
@@ -169,7 +181,7 @@
         (execute! {"op" "ui/close-panel" "panel/id" "a"})
         (execute! {"op" "ui/notify" "message" "missed"})
         (let [stream (open-stream doc)]
-          (is (wait-until #(= 1 (bridge/clients b))))
+          (is (wait-until #(= 1 (executor/clients b))))
           (is (wait-until #(= 1 (count @(:events stream)))))
           (Thread/sleep 100)
           (is (= [{"op" "ui/show-panel" "panel/id" "b" "lines" []}]

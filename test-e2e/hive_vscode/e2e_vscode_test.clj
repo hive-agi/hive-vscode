@@ -8,7 +8,7 @@
             [hive-addon.protocol :as addon]
             [hive-vessel.core :as v]
             [hive-vscode.addon :as vscode]
-            [hive-vscode.bridge :as bridge])
+            [hive-vessel.executor.sse :as sse])
   (:import (java.nio.file Files)
            (java.nio.file.attribute FileAttribute)
            (java.util.concurrent TimeUnit)))
@@ -60,7 +60,7 @@
               target ((get (addon/hooks a) vscode/target-hook-key))]
           (is (wait-until #(.exists (io/file ready)) 300000)
               (str "extension connected; log " root "/vscode.log"))
-          (is (= 1 (bridge/clients b)))
+          (is (= 1 (sse/clients b)))
           (let [reg (v/standard-registry)]
             (is (every? :ok (mapv #(v/dispatch! reg target %) (ops file)))))
           (is (.waitFor p 180 TimeUnit/SECONDS))
@@ -75,6 +75,6 @@
             (is (= 2 (get r "activeLine")))
             (is (= 1 (get r "activeColumn")))
             (is (= [{"event" "carto-flow/selected" "data" {"node" "hive.x/f"}}] (get r "events"))))
-          (is (wait-until #(= 5 (count (bridge/inbox b))) 10000))
-          (is (every? #(true? (get % "ok")) (bridge/inbox b))))
+          (is (wait-until #(= 5 (count (sse/inbox b))) 10000))
+          (is (every? #(true? (get % "ok")) (vscode/replies a))))
         (finally (addon/shutdown! a))))))

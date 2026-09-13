@@ -1,14 +1,16 @@
 (ns hive-vscode.addon
-  "IAddon for the VS Code vessel. Construction is pure; initialize! starts the
-   :json bridge, writes the discovery file the extension reads, builds the
+  "IAddon for the VS Code vessel. Construction is pure; initialize! starts a
+   hive-vessel.executor.sse bridge on loopback (token-gated, every browser
+   Origin refused), writes the discovery file the extension reads, builds the
    hive-vessel target and hands it to an injected :vessel/register-target-fn."
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [hive-addon.protocol :as addon]
-            [hive-vscode.bridge :as bridge])
+            [hive-vessel.executor.sse :as sse])
   (:import (java.nio.charset StandardCharsets)
            (java.nio.file CopyOption Files LinkOption OpenOption Path StandardCopyOption)
-           (java.nio.file.attribute FileAttribute PosixFilePermissions)))
+           (java.nio.file.attribute FileAttribute PosixFilePermissions)
+           (java.security SecureRandom)))
 
 ;; SPDX-License-Identifier: MIT
 
@@ -46,26 +48,45 @@
       (Files/move tmp target (into-array CopyOption [StandardCopyOption/ATOMIC_MOVE
                                                      StandardCopyOption/REPLACE_EXISTING])))))
 
+(defn new-token
+  "32 hex chars from a SecureRandom."
+  []
+  (let [bytes (byte-array 16)]
+    (.nextBytes (SecureRandom.) bytes)
+    (apply str (map #(format "%02x" (bit-and % 0xff)) bytes))))
+
+(defn parse-reply
+  "A window's raw POST body as a string-keyed map; an unparseable body becomes a
+   failed reply."
+  [raw]
+  (try (json/read-str raw)
+       (catch Exception _ {"ok" false "error" {"code" "bridge/unparseable"}})))
+
 (defn target
-  "hive-vessel target executing :json natives through BRIDGE."
+  "hive-vessel target executing :json natives through the sse BRIDGE."
   [b]
   {:vessel/id vessel-id
    :vessel/dialect :json
-   :vessel/execute! (fn [{:native/keys [dialect payload]}]
-                      (when-not (= :json dialect)
-                        (throw (ex-info "vscode vessel executes :json natives only" {:dialect dialect})))
-                      (bridge/broadcast! b payload))})
+   :vessel/execute! (sse/executor b)})
 
 (defn- flatten-config
   [seed runtime-config]
   (merge (:addon/config seed) seed (:addon/config runtime-config) runtime-config))
 
+(defn- start-bridge!
+  "sse bridge on loopback gated by TOKEN; refuses every Origin; :vscode/on-reply
+   receives parsed replies."
+  [config token]
+  (let [on-reply (:vscode/on-reply config)]
+    (sse/start! {:token token
+                 :allowed-origin? (constantly false)
+                 :on-message (when on-reply (comp on-reply parse-reply))
+                 :on-connect (:vscode/on-connect config)})))
+
 (defn- start!
   [config]
-  (let [token (bridge/new-token)
-        b (bridge/start! {:token token
-                          :on-reply (:vscode/on-reply config)
-                          :on-connect (:vscode/on-connect config)})
+  (let [token (new-token)
+        b (start-bridge! config token)
         path (or (:vscode/discovery-path config) (discovery-path (System/getenv "XDG_RUNTIME_DIR")))
         t (target b)
         register-fn (:vessel/register-target-fn config)]
@@ -77,7 +98,7 @@
        :target-registered? (boolean register-fn)
        :unregister-fn (:vessel/unregister-target-fn config)}
       (catch Exception e
-        (bridge/stop! b)
+        (sse/stop! b)
         (throw e)))))
 
 (defn- initialize-addon!
@@ -102,7 +123,7 @@
     (let [{:keys [lifecycle bridge discovery unregister-fn]} @state]
       (when (= :active lifecycle)
         (when unregister-fn (unregister-fn vessel-id))
-        (bridge/stop! bridge)
+        (sse/stop! bridge)
         (Files/deleteIfExists ^Path (.toPath (io/file discovery))))
       (reset! state {:lifecycle :stopped})))
   nil)
@@ -111,11 +132,11 @@
   [state]
   (let [{:keys [lifecycle bridge discovery target-registered? errors]} @state]
     (if (= :active lifecycle)
-      (let [n (bridge/clients bridge)
-            failures (count (remove #(true? (get % "ok")) (bridge/inbox bridge)))]
+      (let [n (sse/clients bridge)
+            failures (count (remove #(true? (get % "ok")) (map parse-reply (sse/inbox bridge))))]
         {:status (if (pos? n) :ok :degraded)
          :details {:windows n
-                   :panels (bridge/retained-panels bridge)
+                   :panels (sse/retained-panels bridge)
                    :failed-replies failures
                    :port (:port bridge)
                    :discovery discovery
@@ -152,4 +173,12 @@
   [a]
   (:target @(:state a)))
 
-(defn bridge-of [a] (:bridge @(:state a)))
+(defn bridge-of
+  "The hive-vessel.executor.sse bridge of an initialized ADDON, or nil."
+  [a]
+  (:bridge @(:state a)))
+
+(defn replies
+  "Parsed replies retained by an initialized ADDON's bridge (latest 100), or nil."
+  [a]
+  (some->> (bridge-of a) sse/inbox (mapv parse-reply)))

@@ -1,8 +1,7 @@
 (ns hive-vscode.e2e-node-test
   "Cross-runtime e2e. hive-vessel dispatch! on the JVM -> :json SSE bridge ->
    the release-compiled extension client under node (recording host) -> POST
-   replies. Needs node, out/harness.js (npm run build) and hive-vessel via
-   local.deps.edn:  clojure -Sdeps \"$(cat local.deps.edn)\" -M:e2e"
+   replies. Needs node and out/harness.js (npm run build):  clojure -M:e2e"
   (:require [clojure.data.json :as json]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
@@ -85,13 +84,13 @@
         (let [bridge (vscode/bridge-of a)
               target ((get (addon/hooks a) vscode/target-hook-key))
               {:keys [process lines]} (spawn-harness path (count fixtures))
-              dispatched (drive! target #(= 1 (hive-vscode.bridge/clients bridge)))]
+              dispatched (drive! target #(= 1 (sse/clients bridge)))]
           (is (every? :ok dispatched) (pr-str (remove :ok dispatched)))
           (is (.waitFor ^Process process 25 TimeUnit/SECONDS))
           (is (zero? (.exitValue ^Process process)))
           (check-harness-output @lines)
-          (is (wait-until #(= (count fixtures) (count (hive-vscode.bridge/inbox bridge)))))
-          (is (every? #(true? (get % "ok")) (hive-vscode.bridge/inbox bridge))
+          (is (wait-until #(= (count fixtures) (count (sse/inbox bridge)))))
+          (is (every? #(true? (get % "ok")) (vscode/replies a))
               "every POSTed acknowledgement reached the addon"))
         (finally (addon/shutdown! a))))))
 
