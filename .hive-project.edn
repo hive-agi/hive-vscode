@@ -1,0 +1,7 @@
+{:project-id "hive-vscode"
+ :parent "hive"
+ :description "VS Code vessel on the hive-vessel standard: a ClojureScript extension that executes :json dialect natives as VS Code effects, and the JVM IAddon that serves them over the :json SSE bridge."
+ :language :clojure
+ :license "MIT"
+ :tags ["hive-vscode" "vscode" "vessel" "hive-vessel" "json-dialect" "cljs" "addon"]
+ :carto {:source-roots ["dev" "resources" "src" "test"]}}

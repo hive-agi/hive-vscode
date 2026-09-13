@@ -1,0 +1,17 @@
+{:source-paths ["src" "test-cljs"]
+
+ :builds
+ {:extension {:target :node-library
+              :output-to "out/extension.js"
+              :exports {:activate hive-vscode.ext.extension/activate
+                        :deactivate hive-vscode.ext.extension/deactivate}
+              :compiler-options {:infer-externs :auto}}
+
+  :harness {:target :node-script
+            :main hive-vscode.ext.harness/main
+            :output-to "out/harness.js"
+            :compiler-options {:infer-externs :auto}}
+
+  :test {:target :node-test
+         :output-to "out/test.js"
+         :ns-regexp "-cljs-test$"}}}

@@ -1,0 +1,113 @@
+[{:input {:op :ui/notify, :message "Build finished", :level :info},
+  :natives
+  [{"message" "Build finished", "level" "info", "op" "ui/notify"}]}
+ {:input
+  {:op :ui/notify,
+   :message "Careful <script>alert(1)</script> & \"quotes\"",
+   :level :warn},
+  :natives
+  [{"message" "Careful <script>alert(1)</script> & \"quotes\"",
+    "level" "warn",
+    "op" "ui/notify"}]}
+ {:input {:op :ui/notify, :message "Build failed", :level :error},
+  :natives
+  [{"message" "Build failed", "level" "error", "op" "ui/notify"}]}
+ {:input
+  {:op :ui/show-panel,
+   :panel/id "carto-flow",
+   :doc
+   #:doc{:title "Carto flow",
+         :blocks
+         [{:block/type :heading, :text "Frame 3", :level 2}
+          {:block/type :para, :text "Collect -> Promote", :tone :info}
+          {:block/type :para,
+           :text "degraded <b>bold</b>",
+           :tone :warn}
+          {:block/type :fields,
+           :fields [["phase" "promote"] ["ns" "hive.x"]]}
+          {:block/type :list, :items ["one" "two & three"]}
+          {:block/type :code,
+           :text "(defn f [x]\n  (inc x))",
+           :lang "clojure"}
+          {:block/type :diff,
+           :lines
+           [#:line{:kind :hunk, :text "@@ -1 +1 @@"}
+            #:line{:kind :removed, :text "-old"}
+            #:line{:kind :added, :text "+new"}
+            #:line{:kind :context, :text " same"}]}
+          {:block/type :link,
+           :text "src/a.clj:12",
+           :file "/tmp/a.clj",
+           :line 12}]}},
+  :natives
+  [{"panel/id" "carto-flow",
+    "doc"
+    {"doc/title" "Carto flow",
+     "doc/blocks"
+     [{"block/type" "heading", "text" "Frame 3", "level" 2}
+      {"block/type" "para", "text" "Collect -> Promote", "tone" "info"}
+      {"block/type" "para",
+       "text" "degraded <b>bold</b>",
+       "tone" "warn"}
+      {"block/type" "fields",
+       "fields" [["phase" "promote"] ["ns" "hive.x"]]}
+      {"block/type" "list", "items" ["one" "two & three"]}
+      {"block/type" "code",
+       "text" "(defn f [x]\n  (inc x))",
+       "lang" "clojure"}
+      {"block/type" "diff",
+       "lines"
+       [{"line/kind" "hunk", "line/text" "@@ -1 +1 @@"}
+        {"line/kind" "removed", "line/text" "-old"}
+        {"line/kind" "added", "line/text" "+new"}
+        {"line/kind" "context", "line/text" " same"}]}
+      {"block/type" "link",
+       "text" "src/a.clj:12",
+       "file" "/tmp/a.clj",
+       "line" 12}]},
+    "op" "ui/show-panel",
+    "lines"
+    [{"text" "Carto flow", "face" "title"}
+     {"text" "", "face" "plain"}
+     {"text" "Frame 3", "face" "heading"}
+     {"text" "", "face" "plain"}
+     {"text" "Collect -> Promote", "face" "info"}
+     {"text" "", "face" "plain"}
+     {"text" "degraded <b>bold</b>", "face" "warn"}
+     {"text" "", "face" "plain"}
+     {"text" "phase : promote", "face" "plain"}
+     {"text" "ns    : hive.x", "face" "plain"}
+     {"text" "", "face" "plain"}
+     {"text" "  - one", "face" "plain"}
+     {"text" "  - two & three", "face" "plain"}
+     {"text" "", "face" "plain"}
+     {"text" "    (defn f [x]", "face" "code"}
+     {"text" "      (inc x))", "face" "code"}
+     {"text" "", "face" "plain"}
+     {"text" "@@ -1 +1 @@", "face" "hunk"}
+     {"text" "-old", "face" "removed"}
+     {"text" "+new", "face" "added"}
+     {"text" " same", "face" "plain"}
+     {"text" "", "face" "plain"}
+     {"text" "src/a.clj:12",
+      "face" "link",
+      "file" "/tmp/a.clj",
+      "line" 12}]}]}
+ {:input {:op :ui/close-panel, :panel/id "carto-flow"},
+  :natives [{"panel/id" "carto-flow", "op" "ui/close-panel"}]}
+ {:input {:op :ui/open-file, :file "/tmp/a.clj", :line 12, :column 3},
+  :natives
+  [{"file" "/tmp/a.clj", "line" 12, "column" 3, "op" "ui/open-file"}]}
+ {:input {:op :ui/open-file, :file "/tmp/b.clj"},
+  :natives [{"file" "/tmp/b.clj", "op" "ui/open-file"}]}
+ {:input {:op :ui/send-to-terminal, :terminal "hive", :text "echo hi"},
+  :natives
+  [{"terminal" "hive", "text" "echo hi", "op" "ui/send-to-terminal"}]}
+ {:input
+  {:op :json/event,
+   :event "carto-flow/selected",
+   :data {:node "hive.x/f", :depth 2}},
+  :natives
+  [{"op" "json/event",
+    "event" "carto-flow/selected",
+    "data" {"node" "hive.x/f", "depth" 2}}]}]

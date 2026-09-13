@@ -1,0 +1,45 @@
+{
+  "name": "hive-vscode",
+  "displayName": "hive vessel",
+  "description": "VS Code vessel for hive: renders hive-vessel :json actions (notifications, panels, files, terminals).",
+  "version": "0.1.0",
+  "publisher": "hive-agi",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Other"],
+  "main": "./out/extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "commands": [
+      {"command": "hive.connect", "title": "hive: Connect to vessel bridge"},
+      {"command": "hive.disconnect", "title": "hive: Disconnect"},
+      {"command": "hive.status", "title": "hive: Show vessel status"}
+    ],
+    "configuration": {
+      "title": "hive",
+      "properties": {
+        "hive.discoveryPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path of the hive-vessel VS Code discovery file. Empty means $XDG_RUNTIME_DIR/hive-vessel/vscode.json."
+        },
+        "hive.autoConnect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Connect to hive on startup and reconnect when the bridge restarts."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "shadow-cljs release extension harness",
+    "watch": "shadow-cljs watch extension",
+    "test": "shadow-cljs compile test && node out/test.js",
+    "package": "npm run build && vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "shadow-cljs": "3.5.1"
+  }
+}

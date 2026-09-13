@@ -1,0 +1,9 @@
+{:addon/id           "hive.vscode"
+ :addon/kind         :addon
+ :addon/type         :native
+ :addon/init-ns      "hive-vscode.addon"
+ :addon/init-fn      "addon-ctor"
+ :addon/capabilities #{:vessel :health-reporting}
+ :addon/description  "VS Code vessel: serves hive-vessel :json natives to the hive-vscode extension over a loopback SSE bridge"
+ :addon/maturity     :experimental
+ :addon/trust-class  :foss}

@@ -1,0 +1,14 @@
+.cpcache/
+.lsp/
+.shadow-cljs/
+node_modules/
+out/
+target/
+*.vsix
+.nrepl-port
+local.deps.edn
+.vscode-test/
+.clj-kondo/.cache/
+.clj-kondo/.lock
+.clj-kondo/imports/
+.clj-kondo/inline-configs/
