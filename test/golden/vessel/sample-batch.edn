@@ -1,0 +1,46 @@
+[{"panel/id" "olympus/tab-2",
+  "doc"
+  {"doc/title" "Carto \"Flow\" \\ #3",
+   "doc/blocks"
+   [{"block/type" "heading", "text" "apply write-form"}
+    {"block/type" "para", "text" "succeeded", "tone" "success"}
+    {"block/type" "fields",
+     "fields" [["paths" "src/a.clj\nsrc/b.clj"] ["verify" "ok"]]}
+    {"block/type" "list", "items" ["one" "two\nmore"]}
+    {"block/type" "code", "text" "(defn f [] \"x\")", "lang" "clojure"}
+    {"block/type" "diff",
+     "text" "@@ -1,2 +1,2 @@\n-(old)\n+(new ü)\n context"}
+    {"block/type" "link",
+     "text" "open a",
+     "file" "/tmp/a.clj",
+     "line" 2}]},
+  "op" "ui/show-panel",
+  "lines"
+  [{"text" "Carto \"Flow\" \\ #3", "face" "title"}
+   {"text" "", "face" "plain"}
+   {"text" "apply write-form", "face" "heading"}
+   {"text" "", "face" "plain"}
+   {"text" "succeeded", "face" "success"}
+   {"text" "", "face" "plain"}
+   {"text" "paths  : src/a.clj", "face" "plain"}
+   {"text" "         src/b.clj", "face" "plain"}
+   {"text" "verify : ok", "face" "plain"}
+   {"text" "", "face" "plain"}
+   {"text" "  - one", "face" "plain"}
+   {"text" "  - two", "face" "plain"}
+   {"text" "    more", "face" "plain"}
+   {"text" "", "face" "plain"}
+   {"text" "    (defn f [] \"x\")", "face" "code"}
+   {"text" "", "face" "plain"}
+   {"text" "@@ -1,2 +1,2 @@", "face" "hunk"}
+   {"text" "-(old)", "face" "removed"}
+   {"text" "+(new ü)", "face" "added"}
+   {"text" " context", "face" "plain"}
+   {"text" "", "face" "plain"}
+   {"text" "open a", "face" "link", "file" "/tmp/a.clj", "line" 2}]}
+ {"message" "frame 7 applied", "op" "ui/notify"}
+ {"message" "boom\nsecond line", "level" "error", "op" "ui/notify"}
+ {"file" "/tmp/a b.clj", "line" 3, "column" 7, "op" "ui/open-file"}
+ {"file" "/tmp/a.clj", "op" "ui/open-file"}
+ {"terminal" "*vterm*", "text" "ls -la\n", "op" "ui/send-to-terminal"}
+ {"panel/id" "olympus/tab-2", "op" "ui/close-panel"}]
