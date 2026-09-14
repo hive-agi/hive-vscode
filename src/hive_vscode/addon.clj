@@ -6,7 +6,9 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [hive-addon.protocol :as addon]
-            [hive-vessel.executor.sse :as sse])
+            [hive-vessel.executor.sse :as sse]
+            [hive-spi.vessel :as render-port]
+            [hive-vessel.renderer :as renderer])
   (:import (java.nio.charset StandardCharsets)
            (java.nio.file CopyOption Files LinkOption OpenOption Path StandardCopyOption)
            (java.nio.file.attribute FileAttribute PosixFilePermissions)
@@ -146,12 +148,20 @@
                   (seq errors) (assoc :errors errors))})))
 
 (defrecord HiveVsCodeAddon [state seed]
+  render-port/IRenderer
+  (renderer-id [_] addon-id-value)
+  (render! [_ ops] (renderer/deliver! (:target @state) ops))
   addon/IAddon
   (addon-id [_] addon-id-value)
   (addon-type [_] :native)
   (capabilities [_] #{:vessel :health-reporting})
-  (initialize! [_ runtime-config] (initialize-addon! state seed runtime-config))
-  (shutdown! [_] (shutdown-addon! state))
+  (initialize! [this runtime-config]
+    (let [result (initialize-addon! state seed runtime-config)]
+      (when (:success? result) (renderer/register! this))
+      result))
+  (shutdown! [this]
+    (renderer/unregister! this)
+    (shutdown-addon! state))
   (tools [_] [])
   (schema-extensions [_] [])
   (health [_] (addon-health state))

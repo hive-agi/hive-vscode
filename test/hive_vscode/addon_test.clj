@@ -7,7 +7,9 @@
             [hive-addon.protocol :as addon]
             [hive-vscode.addon :as vscode]
             [hive-vessel.executor.sse :as executor]
-            [hive-vscode.sse :as sse])
+            [hive-vscode.sse :as sse]
+            [hive-spi.vessel :as render-port]
+            [hive-vessel.renderer :as renderer])
   (:import (java.net URI)
            (java.net.http HttpClient HttpRequest HttpRequest$BodyPublishers HttpResponse$BodyHandlers)
            (java.nio.file Files LinkOption)
@@ -110,6 +112,9 @@
             doc (json/read-str (slurp path))
             p (.toPath (io/file path))]
         (is (:success? result))
+        (is (satisfies? render-port/IRenderer a))
+        (is (identical? a (get @renderer/renderers "hive.vscode")))
+        (is (:error (render-port/render! a [{:op :ui/send-to-terminal :text "forbidden"}])))
         (is (= {"vessel" "vscode" "dialect" "json"} (select-keys doc ["vessel" "dialect"])))
         (is (re-matches #"[0-9a-f]{32}" (get doc "token")))
         (is (= "rw-------" (PosixFilePermissions/toString (Files/getPosixFilePermissions p (make-array LinkOption 0)))))
@@ -120,6 +125,7 @@
         (is (:already-initialized? (addon/initialize! a {})))
         (addon/shutdown! a)
         (is (= [:gone :vscode] @registered))
+        (is (not (contains? @renderer/renderers "hive.vscode")))
         (is (not (.exists (io/file path))))))))
 
 (deftest the-bridge-refuses-strangers
