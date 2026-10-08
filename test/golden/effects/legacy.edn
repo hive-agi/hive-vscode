@@ -1,0 +1,10 @@
+{:json-event {"op" "json/event", "event" "e", "id" "kept"},
+ :legacy-show
+ {"op" "ui/show-panel", "panel/id" "p", "doc" {"doc/title" "T"}},
+ :neutral-close {"op" "ui/close-panel", "id" "p", "panel/id" "p"},
+ :neutral-notify {"op" "ui/notify", "message" "m"},
+ :neutral-show
+ {"op" "ui/show-panel",
+  "id" "p",
+  "doc" {"title" "T", "doc/title" "T"},
+  "panel/id" "p"}}
