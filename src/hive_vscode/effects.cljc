@@ -54,12 +54,33 @@
     [[:emit-event (get p "event") (let [d (get p "data")] (if (map? d) d {}))]]
     [[:invalid "json/event" "event is required"]]))
 
+(def legacy-op-names
+  "Neutral wire op -> legacy ui/* op. hive-vessel's :json dialect sends the
+   neutral names to a client that advertised features (Lens C5)."
+  {"show" "ui/show-panel" "close" "ui/close-panel" "focus" "ui/focus-tab"
+   "append" "ui/append-tab" "notify" "ui/notify" "open-file" "ui/open-file"})
+
+(defn ->legacy
+  "PAYLOAD in the legacy vocabulary, whichever one it arrived in: the op name,
+   \"id\" -> \"panel/id\" and the doc's \"title\" -> \"doc/title\"."
+  [payload]
+  (if-let [op (legacy-op-names (get payload "op"))]
+    (cond-> (assoc payload "op" op)
+      (and (contains? payload "id") (not (contains? payload "panel/id")))
+      (assoc "panel/id" (get payload "id"))
+      (and (map? (get payload "doc")) (contains? (get payload "doc") "title")
+           (not (contains? (get payload "doc") "doc/title")))
+      (assoc-in ["doc" "doc/title"] (get-in payload ["doc" "title"])))
+    payload))
+
 (defn payload->effects
-  "Effects for one :json native PAYLOAD (string-keyed map)."
+  "Effects for one :json native PAYLOAD (string-keyed map), in either wire
+   vocabulary."
   [payload]
   (if-not (map? payload)
     [[:invalid nil "payload must be an object"]]
-    (let [op (get payload "op")]
+    (let [payload (->legacy payload)
+          op (get payload "op")]
       (case op
         "ui/notify" (notify payload)
         "ui/show-panel" (show-panel payload)
